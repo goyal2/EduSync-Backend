@@ -39,8 +39,12 @@ steps:
   inputs:
     command: 'test'
     projects: '**/Testing/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --no-build --settings $(Build.SourcesDirectory)/Testing/test.runsettings'
+    arguments: '--configuration $(buildConfiguration) --no-build --logger trx --results-directory $(Agent.TempDirectory)'
+    publishTestResults: true
   displayName: 'Run Tests'
+  env:
+    EnableSensitiveDataLogging: 'true'
+    ASPNETCORE_ENVIRONMENT: 'Testing'
   continueOnError: true
 
 - script: |
