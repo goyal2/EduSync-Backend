@@ -8,7 +8,7 @@ variables:
 - name: buildConfiguration
   value: 'Release'
 - name: azureAppName
-  value: 'somyaprojectwebapp'  # Your Azure App Service name
+  value: 'backendprojectwebapp'  # Your Azure App Service name
 - name: ASPNETCORE_ENVIRONMENT
   value: 'Production'
 - name: ASPNETCORE_DETAILED_ERRORS
