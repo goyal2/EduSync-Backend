@@ -47,9 +47,6 @@ steps:
       $webConfigContent = @"
       <?xml version="1.0" encoding="utf-8"?>
       <configuration>
-        <system.web>
-          <customErrors mode="Off"/>
-        </system.web>
         <system.webServer>
           <handlers>
             <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
@@ -61,11 +58,18 @@ steps:
               <environmentVariable name="ASPNETCORE_URLS" value="http://0.0.0.0:5000" />
             </environmentVariables>
           </aspNetCore>
+          <httpErrors existingResponse="PassThrough" />
           <security>
-            <requestFiltering allowDoubleEscaping="true"/>
+            <requestFiltering allowDoubleEscaping="true">
+              <requestLimits maxAllowedContentLength="2147483647" />
+            </requestFiltering>
           </security>
-          <httpErrors errorMode="Detailed" />
+          <modules runAllManagedModulesForAllRequests="true" />
         </system.webServer>
+        <system.web>
+          <customErrors mode="Off" />
+          <httpRuntime maxRequestLength="2147483647" />
+        </system.web>
       </configuration>
       "@
       Set-Content -Path $webConfigPath -Value $webConfigContent
@@ -81,17 +85,17 @@ steps:
     deploymentMethod: 'auto'
     startupCommand: 'dotnet EduSyncWebApi.dll'
     appSettings: |
-      -ASPNETCORE_ENVIRONMENT Production
-      -ASPNETCORE_DETAILED_ERRORS true
-      -ConnectionStrings__DefaultConnection $(ConnectionString)
-      -AzureBlob__ConnectionString $(BlobConnection)
-      -AzureBlob__ContainerName course-file
-      -AzureBlob__AccountName somyaprojectstorageacc
-      -WEBSITES_PORT 5000
-      -ASPNETCORE_URLS http://0.0.0.0:5000
-      -DOTNET_RUNNING_IN_CONTAINER true
-      -DOTNET_SYSTEM_GLOBALIZATION_INVARIANT false
-      -ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS false
+      ASPNETCORE_ENVIRONMENT=Production
+      ASPNETCORE_DETAILED_ERRORS=true
+      ConnectionStrings__DefaultConnection=$(ConnectionString)
+      AzureBlob__ConnectionString=$(BlobConnection)
+      AzureBlob__ContainerName=course-file
+      AzureBlob__AccountName=somyaprojectstorageacc
+      WEBSITES_PORT=5000
+      ASPNETCORE_URLS=http://0.0.0.0:5000
+      DOTNET_RUNNING_IN_CONTAINER=true
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS=false
 
 - task: AzureAppServiceManage@0
   inputs:
