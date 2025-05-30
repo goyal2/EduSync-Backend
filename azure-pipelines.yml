@@ -35,8 +35,11 @@ steps:
     dotnet build EduSyncWebApi.sln --configuration $(buildConfiguration) --no-restore
   displayName: 'Build .NET Project'
 
-- script: |
-    dotnet test Testing/Testing.csproj --configuration $(buildConfiguration) --no-build
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '**/Testing/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-build --settings $(Build.SourcesDirectory)/Testing/test.runsettings'
   displayName: 'Run Tests'
   continueOnError: true
 
