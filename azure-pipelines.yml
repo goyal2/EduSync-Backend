@@ -8,7 +8,7 @@ variables:
 - name: buildConfiguration
   value: 'Release'
 - name: azureAppName
-  value: 'backendprojectwebapp'  # Your Azure App Service name
+  value: 'backendprojectwebapp'  
 - name: ASPNETCORE_ENVIRONMENT
   value: 'Production'
 - name: ASPNETCORE_DETAILED_ERRORS
@@ -65,4 +65,4 @@ steps:
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
-    publishLocation: 'Container' 
+    publishLocation: 'Container'
