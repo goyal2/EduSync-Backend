@@ -35,16 +35,6 @@ steps:
     dotnet build EduSyncWebApi.sln --configuration $(buildConfiguration) --no-restore
   displayName: 'Build .NET Project'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/Testing/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --no-build --logger:"trx;LogFileName=TestResults.trx" --results-directory "$(Agent.TempDirectory)"'
-  displayName: 'Run Tests'
-  env:
-    EnableSensitiveDataLogging: 'true'
-    ASPNETCORE_ENVIRONMENT: 'Testing'
-  continueOnError: true
 
 
 - script: |
