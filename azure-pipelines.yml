@@ -35,28 +35,70 @@ steps:
     dotnet build EduSyncWebApi.sln --configuration $(buildConfiguration) --no-restore
   displayName: 'Build .NET Project'
 
-
-
 - script: |
     dotnet publish EduSyncWebApi.sln -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory) --no-build
   displayName: 'Publish .NET Project'
 
-- script: |
-    echo "Checking published artifact directory: $(Build.ArtifactStagingDirectory)"
-    ls -la $(Build.ArtifactStagingDirectory)
-    echo "Contents of web.config:"
-    cat $(Build.ArtifactStagingDirectory)/web.config
-  displayName: 'Verify Published Files'
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $webConfigPath = "$(Build.ArtifactStagingDirectory)\web.config"
+      $webConfigContent = @"
+      <?xml version="1.0" encoding="utf-8"?>
+      <configuration>
+        <system.web>
+          <customErrors mode="Off"/>
+        </system.web>
+        <system.webServer>
+          <handlers>
+            <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+          </handlers>
+          <aspNetCore processPath="dotnet" arguments=".\EduSyncWebApi.dll" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="inprocess">
+            <environmentVariables>
+              <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
+              <environmentVariable name="ASPNETCORE_DETAILED_ERRORS" value="true" />
+              <environmentVariable name="ASPNETCORE_URLS" value="http://0.0.0.0:5000" />
+            </environmentVariables>
+          </aspNetCore>
+          <security>
+            <requestFiltering allowDoubleEscaping="true"/>
+          </security>
+          <httpErrors errorMode="Detailed" />
+        </system.webServer>
+      </configuration>
+      "@
+      Set-Content -Path $webConfigPath -Value $webConfigContent
+  displayName: 'Configure web.config'
 
 - task: AzureWebApp@1
   displayName: 'Deploy to Azure App Service'
   inputs:
-    azureSubscription: 'AzureConnection2503'  # Update this to match your Azure service connection name
+    azureSubscription: 'AzureConnection2503'
     appType: 'webApp'
     appName: '$(azureAppName)'
     package: '$(Build.ArtifactStagingDirectory)'
     deploymentMethod: 'auto'
     startupCommand: 'dotnet EduSyncWebApi.dll'
+    appSettings: |
+      -ASPNETCORE_ENVIRONMENT Production
+      -ASPNETCORE_DETAILED_ERRORS true
+      -ConnectionStrings__DefaultConnection $(ConnectionString)
+      -AzureBlob__ConnectionString $(BlobConnection)
+      -AzureBlob__ContainerName course-file
+      -AzureBlob__AccountName somyaprojectstorageacc
+      -WEBSITES_PORT 5000
+      -ASPNETCORE_URLS http://0.0.0.0:5000
+      -DOTNET_RUNNING_IN_CONTAINER true
+      -DOTNET_SYSTEM_GLOBALIZATION_INVARIANT false
+      -ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS false
+
+- task: AzureAppServiceManage@0
+  inputs:
+    azureSubscription: 'AzureConnection2503'
+    Action: 'Restart Azure App Service'
+    WebAppName: '$(azureAppName)'
+  displayName: 'Restart App Service'
 
 - task: PublishBuildArtifacts@1
   inputs:
