@@ -1,66 +1,68 @@
-# Azure Pipeline for EduSync Backend
-# Builds and deploys the ASP.NET Core backend to Azure App Service
-
 trigger:
-- master  # Your main branch is named 'master'
+- master
 
 pool:
-  vmImage: 'windows-latest'  # Using Windows since your project appears to be Windows-based
+  vmImage: 'ubuntu-latest'
 
 variables:
-  solution: 'EduSyncWebApi.sln'
-  buildConfiguration: 'Release'
-  dotNetVersion: '8.0.x'  # Using .NET 8 based on your project
-  azureAppServiceName: 'somyaprojectwebapp'  # Based on your publish profile name
+- name: buildConfiguration
+  value: 'Release'
+- name: azureAppName
+  value: 'somyaprojectwebapp'  # Your Azure App Service name
+- name: ASPNETCORE_ENVIRONMENT
+  value: 'Production'
+- name: ASPNETCORE_DETAILED_ERRORS
+  value: 'true'
 
 steps:
+- checkout: self
+  clean: true
+  fetchDepth: 1
+
 - task: UseDotNet@2
   inputs:
-    version: $(dotNetVersion)
-    includePreviewVersions: false
-  displayName: 'Use .NET $(dotNetVersion)'
+    packageType: 'sdk'
+    version: '8.x'
+  displayName: 'Install .NET SDK'
 
-- task: NuGetToolInstaller@1
-  displayName: 'Install NuGet'
+- script: |
+    ls -la
+    pwd
+    dotnet restore EduSyncWebApi.sln
+  displayName: 'Restore Dependencies'
 
-- task: NuGetCommand@2
-  inputs:
-    command: 'restore'
-    restoreSolution: '$(solution)'
-  displayName: 'NuGet Restore'
+- script: |
+    dotnet build EduSyncWebApi.sln --configuration $(buildConfiguration) --no-restore
+  displayName: 'Build .NET Project'
 
-- task: DotNetCoreBuild@1
-  inputs:
-    projects: '$(solution)'
-    arguments: '--configuration $(buildConfiguration)'
-  displayName: 'Build Solution'
-
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'test'
-    projects: '**/Testing/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+- script: |
+    dotnet test Testing/Testing.csproj --configuration $(buildConfiguration) --no-build
   displayName: 'Run Tests'
-  continueOnError: true  # Allow pipeline to continue even if tests fail
+  continueOnError: true
 
-- task: DotNetCoreCLI@2
+- script: |
+    dotnet publish EduSyncWebApi.sln -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory) --no-build
+  displayName: 'Publish .NET Project'
+
+- script: |
+    echo "Checking published artifact directory: $(Build.ArtifactStagingDirectory)"
+    ls -la $(Build.ArtifactStagingDirectory)
+    echo "Contents of web.config:"
+    cat $(Build.ArtifactStagingDirectory)/web.config
+  displayName: 'Verify Published Files'
+
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure App Service'
   inputs:
-    command: 'publish'
-    publishWebProjects: true
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-    zipAfterPublish: true
-  displayName: 'Publish Project'
+    azureSubscription: 'AzureConnection2503'  # Update this to match your Azure service connection name
+    appType: 'webApp'
+    appName: '$(azureAppName)'
+    package: '$(Build.ArtifactStagingDirectory)'
+    deploymentMethod: 'auto'
+    startupCommand: 'dotnet EduSyncWebApi.dll'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
-  displayName: 'Publish Artifacts'
-
-- task: AzureWebApp@1
-  inputs:
-    azureSubscription: 'Azure subscription 1'  # Update this to match your Azure service connection name
-    appName: '$(azureAppServiceName)'
-    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
-    deploymentMethod: 'auto'
-  displayName: 'Deploy to Azure App Service' 
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container' 
