@@ -39,13 +39,13 @@ steps:
   inputs:
     command: 'test'
     projects: '**/Testing/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --no-build --logger trx --results-directory $(Agent.TempDirectory)'
-    publishTestResults: true
+    arguments: '--configuration $(buildConfiguration) --no-build --logger:"trx;LogFileName=TestResults.trx" --results-directory "$(Agent.TempDirectory)"'
   displayName: 'Run Tests'
   env:
     EnableSensitiveDataLogging: 'true'
     ASPNETCORE_ENVIRONMENT: 'Testing'
   continueOnError: true
+
 
 - script: |
     dotnet publish EduSyncWebApi.sln -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory) --no-build
