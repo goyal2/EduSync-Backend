@@ -35,7 +35,24 @@ steps:
     dotnet build EduSyncWebApi.sln --configuration $(buildConfiguration) --no-restore
   displayName: 'Build .NET Project'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '**/Testing/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --no-build --logger:"trx;LogFileName=TestResults.trx" --results-directory "$(Agent.TempDirectory)"'
+  displayName: 'Run Tests'
+  env:
+    EnableSensitiveDataLogging: 'true'
+    ASPNETCORE_ENVIRONMENT: 'Testing'
+  continueOnError: true
 
+- task: PublishTestResults@2
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '$(Agent.TempDirectory)/**/*.trx'
+    failTaskOnFailedTests: false
+  displayName: 'Publish Test Results'
+  condition: succeededOrFailed()
 
 - script: |
     dotnet publish EduSyncWebApi.sln -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory) --no-build
@@ -51,12 +68,26 @@ steps:
 - task: AzureWebApp@1
   displayName: 'Deploy to Azure App Service'
   inputs:
-    azureSubscription: 'AzureConnection2503'  # Update this to match your Azure service connection name
+    azureSubscription: 'AzureConnection2503'
     appType: 'webApp'
     appName: '$(azureAppName)'
     package: '$(Build.ArtifactStagingDirectory)'
     deploymentMethod: 'auto'
     startupCommand: 'dotnet EduSyncWebApi.dll'
+    appSettings: |
+      -ASPNETCORE_ENVIRONMENT Production
+      -ASPNETCORE_DETAILED_ERRORS true
+      -ConnectionStrings__DefaultConnection $(ConnectionString)
+      -AzureBlob__ConnectionString $(BlobConnection)
+      -AzureBlob__ContainerName course-file
+      -AzureBlob__AccountName somyaprojectstorageacc
+
+- task: AzureAppServiceManage@0
+  inputs:
+    azureSubscription: 'AzureConnection2503'
+    Action: 'Restart Azure App Service'
+    WebAppName: '$(azureAppName)'
+  displayName: 'Restart App Service'
 
 - task: PublishBuildArtifacts@1
   inputs:
