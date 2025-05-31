@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Allow", builder =>
     {
-        builder.WithOrigins("https://proud-sand-0ca3f8500.6.azurestaticapps.net/") 
+        builder.WithOrigins("https://proud-sand-0ca3f8500.6.azurestaticapps.net") 
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); 
