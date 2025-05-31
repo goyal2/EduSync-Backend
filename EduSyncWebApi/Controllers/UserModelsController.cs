@@ -25,7 +25,7 @@ namespace EduSyncWebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserModel>>> GetUserModels()
         {
-            Console.Writeline("inside usermodel");
+            Console.WriteLine("inside usermodel");
             return await _context.UserModels.ToListAsync();
         }
 
