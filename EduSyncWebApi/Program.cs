@@ -7,9 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost3000", builder =>
+    options.AddPolicy("Allow", builder =>
     {
-        builder.WithOrigins("http://localhost:3000") 
+        builder.WithOrigins("https://proud-sand-0ca3f8500.6.azurestaticapps.net/") 
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials(); 
@@ -34,7 +34,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowLocalhost3000");
+app.UseCors("Allow");
 
 app.UseHttpsRedirection();
 
