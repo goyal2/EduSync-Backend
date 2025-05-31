@@ -9,15 +9,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("Allow", builder =>
     {
-        builder
-        .SetIsOriginAllowed(origin => true) // Allow any origin
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials();
-        // builder.WithOrigins("https://proud-sand-0ca3f8500.6.azurestaticapps.net") 
-        //        .AllowAnyHeader()
-        //        .AllowAnyMethod()
-        //        .AllowCredentials(); 
+        
+        builder.WithOrigins("https://proud-sand-0ca3f8500.6.azurestaticapps.net") 
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials(); 
     });
 });
 
