@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Exclude>[*]Testing.*,[*]*Program,[*]*Startup</Exclude>
+          <Include>[*]EduSyncWebApi.*</Include>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <UseSourceLink>true</UseSourceLink>
+          <SkipAutoProps>true</SkipAutoProps>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <EnableSensitiveDataLogging>true</EnableSensitiveDataLogging>
+      <ASPNETCORE_ENVIRONMENT>Testing</ASPNETCORE_ENVIRONMENT>
+    </EnvironmentVariables>
+    <TestSessionTimeout>10000</TestSessionTimeout>
+    <TreatNoTestsAsError>false</TreatNoTestsAsError>
+  </RunConfiguration>
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console" enabled="True">
+        <Configuration>
+          <Verbosity>detailed</Verbosity>
+        </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
+</RunSettings> 
